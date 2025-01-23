@@ -149,7 +149,7 @@ async def run(socket, send_address, send_port, listen_port, init):
 
 async def main():
     if len(sys.argv) != 5:
-        logging.error("Usage: python script.py <listen_port> <send_address> <send_port> <initializer>")
+        logging.error("Usage: python script.py <listen_port> <send_address> <send_port> <initializer>") # python3 ./misra_node.py 8010 localhost 8011 1
         sys.exit(1)
 
     listen_port = int(sys.argv[1])
