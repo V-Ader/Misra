@@ -102,20 +102,21 @@ class MisraSocket:
             if token < 0: #pong
                 logging.info("Recived pong %d", token)
                 self.has_pong = True
+                if token == self.m and not self.has_ping:
+                    self.regenerate_tokens(token)
                 self.pong = token
 
             if token > 0: #ping
                 logging.info("Recived ping %d", token)
                 self.has_ping = True
-                self.has_ping = token
+                if token == self.m and not self.has_pong:
+                    self.regenerate_tokens(token)
+                self.ping = token
                 asyncio.create_task(self.handleCritival())
 
             if self.has_pong and self.has_ping:
                 logging.info("Both tokens acquired, performing incarnation")
                 self.incarnate(token)
-
-            if abs(token) == self.m:
-                self.regenerate_tokens(token)
 
             #send
             if token < 0: #pong
@@ -129,11 +130,14 @@ class MisraSocket:
             logging.info("------- Exiting critical section")
             await self.send(self.ping) 
 
-
     def regenerate_tokens(self, value):
         logging.info("regenerate_tokens")
         self.ping = abs(value)
         self.pong = -self.ping
+        if value < 0 :
+            asyncio.create_task(self.send(self.ping))
+        elif value > 0:
+            asyncio.create_task(self.send(self.pong))
 
     def incarnate(self, value):
         self.ping = abs(value) + 1
@@ -149,7 +153,7 @@ async def run(socket, send_address, send_port, listen_port, init):
 
 async def main():
     if len(sys.argv) != 5:
-        logging.error("Usage: python script.py <listen_port> <send_address> <send_port> <initializer>") # python3 ./misra_node.py 8010 localhost 8011 1
+        logging.error("Usage: python script.py <listen_port> <send_address> <send_port> <initializer>")
         sys.exit(1)
 
     listen_port = int(sys.argv[1])
