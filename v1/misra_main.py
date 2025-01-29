@@ -53,7 +53,7 @@ class MisraSocket:
                 await asyncio.sleep(1)
 
     async def send_init_message(self):
-        logging.info("The init message was sent.")
+        logging.info("The init message with tokens were sent.")
         self.has_pong = True
         self.has_ping = True
         await asyncio.sleep(3)
@@ -74,7 +74,7 @@ class MisraSocket:
 
 
     async def critical_section(self):
-        logging.info("PING token received, I will enter the critical section.")
+        logging.info("PING token received, I will enter to the critical section.")
         logging.info("____Critical section START____")
         await asyncio.sleep(10)
         logging.info("____Critical section END____")
@@ -90,22 +90,21 @@ class MisraSocket:
                 continue
            
             if token < 0:
-                logging.info("PONG %d token received.", token)
+                logging.info("PONG token with value %d received.", token)
                 self.has_pong = True
 
             if token > 0:
-                # self.pong = -self.ping
-                logging.info("PING %d token received.", token)
+                logging.info("PING token with value %d received.", token)
                 self.has_ping = True
 
             if token == self.m:
                 if self.m > 0 and not self.has_pong:
-                    logging.warning("Pong token lost, PING: %s, PONG: %s, m:%s. Regenerating..", self.ping, self.pong, self.m)
+                    logging.warning("PONG token lost, PING: %s, PONG: %s, m:%s. Regenerating..", self.ping, self.pong, self.m)
                     self.regenerate_tokens(token)
                     await self.send(TokenType.PONG_TOKEN)
                     continue
                 elif self.m < 0 and not self.has_ping:
-                    logging.warning("Ping token lost, PING: %s, PONG: %s, m:%s. Regenerating..", self.ping, self.pong, self.m)
+                    logging.warning("PING token lost, PING: %s, PONG: %s, m:%s. Regenerating..", self.ping, self.pong, self.m)
                     self.regenerate_tokens(token)
                     await self.send(TokenType.PING_TOKEN)
                     continue
@@ -116,8 +115,6 @@ class MisraSocket:
             
             if token < 0:
                 self.pong = token
-                # self.ping = abs(token)
-
 
             if self.has_ping and self.has_pong:
                 logging.info("BOTH tokens received. PING: %s, PONG: %s New incarnation of the tockens.", str(self.ping), str(self.pong))
